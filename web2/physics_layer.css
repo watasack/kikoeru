@@ -1,0 +1,37 @@
+/* 物理の層（web2 本体には触れない追加の見た目）。文字は 14px 以上。 */
+#phys-note{position:absolute;right:8px;top:8px;max-width:min(720px,52%);z-index:6;background:rgba(8,12,18,.86);color:#fff;font-size:14px;line-height:1.5;padding:6px 12px;border-radius:8px;border-left:4px solid #ff9a2e;pointer-events:none}
+#phys-panel{position:absolute;left:8px;top:112px;max-height:calc(100% - 178px);width:452px;z-index:5;background:rgba(14,19,25,.93);color:#f2f5f8;border-radius:10px;font-size:14px;line-height:1.45;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.45)}
+#phys-panel.fold #phys-body{display:none}
+#phys-panel.hidden{display:none}
+#phys-head{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1c2631;font-weight:700;font-size:15px}
+#phys-head .sp{flex:1}
+#phys-head button,#phys-body button,#phys-body select{font:inherit;font-size:14px;color:#f2f5f8;background:#2a3846;border:1px solid #46586b;border-radius:6px;padding:3px 9px;cursor:pointer}
+#phys-body button.on,#phys-head button.on{background:#1f6fd1;border-color:#7db4ff;font-weight:700}
+#phys-body button:disabled{opacity:.45;cursor:default}
+#phys-body{overflow:auto;padding:8px 10px 10px;flex:1}
+#phys-body h3{margin:8px 0 4px;font-size:15px}
+#phys-body .row{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
+#phys-body table{border-collapse:collapse;width:100%}
+#phys-body td,#phys-body th{padding:1px 6px;border-bottom:1px solid #2f3d4b;text-align:left;font-weight:400;vertical-align:top}
+#phys-body td.n,#phys-body th.n{text-align:right;font-variant-numeric:tabular-nums}
+#phys-body .verdict{font-size:19px;font-weight:700;line-height:1.35;margin:4px 0;padding:4px 8px;border-radius:6px}
+.v-none{background:#5a1d1d;color:#ffd7d7}.v-some{background:#1f3d5a;color:#d4ebff}.v-few{background:#5a4a14;color:#fff0b8}.v-wide{background:#143d2d;color:#c8ffe6}
+#phys-body .small{font-size:14px;color:#c6d1db}
+#phys-body .warn{color:#ffd18a}
+#phys-body canvas{display:block;width:100%;background:#0f151c;border-radius:4px;margin:3px 0}
+#phys-body .steps button{display:block;width:100%;text-align:left;margin:2px 0;position:relative;overflow:hidden}
+#phys-body .steps button .bar{position:absolute;left:0;top:0;bottom:0;background:rgba(80,200,150,.28);z-index:0}
+#phys-body .steps button span{position:relative;z-index:1}
+#phys-body .steps button .c{float:right;font-variant-numeric:tabular-nums}
+.sw2{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid #fff4}
+#phys-time{position:absolute;right:8px;top:76px;width:560px;z-index:5;background:rgba(14,19,25,.93);color:#f2f5f8;border-radius:10px;font-size:14px;line-height:1.45;padding:8px 10px;box-shadow:0 2px 14px rgba(0,0,0,.45)}
+#phys-time.hidden{display:none}
+#phys-time canvas{display:block;width:540px;height:210px;background:#0f151c;border-radius:4px}
+#phys-time table{border-collapse:collapse;width:100%;margin-top:4px}
+#phys-time td,#phys-time th{padding:1px 6px;border-bottom:1px solid #2f3d4b;text-align:left;font-weight:400}
+#phys-time td.n{text-align:right;font-variant-numeric:tabular-nums}
+#phys-labels{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.phl{position:absolute;left:0;top:0;white-space:nowrap;font-size:14px;line-height:1.25;color:#fff;background:rgba(8,12,18,.82);padding:1px 6px;border-radius:4px;border:2px solid #fff;font-weight:700;will-change:transform}
+body.phys-on #hud-cov{display:none!important}
+body.phys-on #notes #hint{display:none}
+body.noui .phys-webnote{display:none}

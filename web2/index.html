@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聞こえる街 - 防災行政無線の届き方（3D 都市モデル版）</title>
+  <script type="module" crossorigin src="./assets/index-D8pSUch-.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-B9rLtQhm.css">
+</head>
+<body>
+<header id="top">
+  <h1>聞こえる街</h1>
+  <p class="sub">金沢市の一地区で、防災行政無線の音が建物に遮られて基準に届かない家を探し、実在の子局に足すスピーカーと戸別受信機の案を予算内で比べる（概略の予測。実測との比較なし）</p>
+</header>
+<div id="app">
+  <section id="stage">
+   <div id="viewbox">
+    <div id="view"></div>
+    <div id="loading">読み込み中（3D 都市モデル、航空写真、計算結果）…</div>
+    <div id="topstack">
+    <div id="toolbar">
+      <div class="row1">
+      <div class="grp" role="group" aria-label="カメラ">
+        <button type="button" data-cam="overview">全景</button>
+        <button type="button" data-cam="street">街路の高さ</button>
+        <button type="button" data-cam="speaker">スピーカーの近く</button>
+        <button type="button" data-cam="top">真上</button>
+      </div>
+      <div class="grp" role="group" aria-label="時刻">
+        <button type="button" data-time="day">昼</button>
+        <button type="button" data-time="dusk">夕</button>
+        <button type="button" data-time="night">夜</button>
+      </div>
+      <button type="button" id="btn-tour">自動ツアー</button>
+      <button type="button" id="btn-menu" aria-expanded="false" aria-controls="tb-more">表示設定</button>
+      <button type="button" id="btn-fold" aria-expanded="true" aria-controls="toolbar" title="メニューを畳んで、画面を広く使う">畳む ▲</button>
+      </div>
+      <div id="tb-more">
+      <div class="grp" role="group" aria-label="覆いと地面の色の濃さ">
+        <button type="button" data-look="photo" class="on" title="航空写真が透けて見える、薄い表示">写真を見る</button>
+        <button type="button" data-look="analysis" title="覆いと音圧の色を濃くした表示">分析を見る</button>
+      </div>
+      <label><input type="checkbox" id="chk-heat" checked> 音圧ヒートマップ</label>
+      <label><input type="checkbox" id="chk-wave" checked> 波面</label>
+      <label><input type="checkbox" id="chk-status" checked> 聞こえ方の覆い</label>
+      <label><input type="checkbox" id="chk-cands" checked> スピーカー候補</label>
+      <label><input type="checkbox" id="chk-decor" checked> 街路の飾り</label>
+      <label><input type="checkbox" id="chk-fx" checked> AO・ブルーム</label>
+      </div>
+    </div>
+    <div id="hud-cov" class="hud"></div>
+    </div>
+    <div id="warnbar">予測値は概略で、実測ではありません。</div>
+    <div id="caption"></div>
+    <div id="notes">
+      <div id="hint">ドラッグで回転 / ホイール・ピンチで拡大 / 右ドラッグで移動 / 地面や建物をクリックでその地点の音圧</div>
+      <div id="decor-note">街路樹・街灯・電柱・横断歩道は、見た目のための飾りです（PLATEAU のデータではなく、実在の位置を表しません）。</div>
+    </div>
+   </div>
+    <div id="credit">
+      <div>出典：国土交通省 PLATEAUウェブサイト（<a href="https://www.mlit.go.jp/plateau/" target="_blank" rel="noopener">https://www.mlit.go.jp/plateau/</a>）を加工して作成</div>
+      <div>3D都市モデル：国土交通省 Project PLATEAU「3D都市モデル（Project PLATEAU）金沢市」を加工して作成。ライセンス：<a href="https://creativecommons.org/licenses/by/4.0/deed.ja" target="_blank" rel="noopener">CC BY 4.0</a></div>
+      <div>使用ライブラリ：<a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>、<a href="https://github.com/NASA-AMMOS/3DTilesRendererJS" target="_blank" rel="noopener">3d-tiles-renderer</a>、<a href="https://vite.dev/" target="_blank" rel="noopener">Vite</a>（いずれも MIT ライセンス）</div>
+      <div>地面の画像：国土地理院シームレス空中写真（<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">https://maps.gsi.go.jp/development/ichiran.html</a>）</div>
+    </div>
+  </section>
+
+  <aside id="panel">
+    <section class="card" id="sum-card">
+      <h2>どの家が聞こえない？ 追加すると何が変わる？</h2>
+      <p class="sum-lead">金沢市の防災無線（実在の子局24本）が、建物にさえぎられて届かない家を色で示します。予算を選ぶと、地図とこの数字が変わります。</p>
+      <ul class="sum-legend">
+        <li><span class="sw g"></span>聞こえる</li>
+        <li><span class="sw y stripe"></span>戸別受信機で補う</li>
+        <li><span class="sw r grid"></span>聞こえない（朱の格子）</li>
+      </ul>
+      <div class="sum-big"><span id="sum-now">-</span> <small>/ <span id="sum-total">-</span> 棟が聞こえる</small></div>
+      <div class="sum-delta" id="sum-delta"></div>
+      <div class="bar thick"><i id="sbar-g"></i><i id="sbar-y"></i><i id="sbar-r"></i></div>
+      <div class="sum-counts" id="sum-counts"></div>
+      <p class="small" id="sum-items"></p>
+      <div class="small"><b>追加予算を選ぶ</b>（地図の色が変わります）</div>
+      <div class="chips" id="sum-chips"></div>
+      <label class="slider" id="lbl-budget">予算 <output id="out-budget">-</output>
+        <input type="range" id="rng-budget" min="0" max="0" step="1" value="0">
+      </label>
+      <p class="small" id="sum-hint">地図はドラッグで回転、ホイールで拡大。建物や地面をクリックすると、その地点の音圧と聞こえ方を再生できます。</p>
+    </section>
+
+    <details class="card" id="set-card">
+      <summary><b>くわしい設定・前提</b>（方法・費用・計算の前提）</summary>
+      <div class="seg" role="group" aria-label="手法">
+        <button type="button" data-method="greedy" class="on">貪欲法</button>
+        <button type="button" data-method="ilp">整数計画</button>
+      </div>
+      <p class="small" id="cost-note"></p>
+      <p class="small" id="model-row"><span hidden>評価モデル: <a id="lnk-real" href="?model=real">実在の子局</a> / <a id="lnk-ext" href="?model=ext">仮想の配置</a> / <a id="lnk-basic" href="?model=basic">基本</a></span><br><span id="model-desc"></span></p>
+      <p class="small"><a id="lnk-phys" href="./physics.html?physics=1" target="_blank" rel="noopener">物理の層（3D ビューア）を開く</a>（項ごとの効き・階段・経路・検算。拡張モデルの予算 1,500 の配置を表示）</p>
+    </details>
+
+    <section class="card" id="cov-card">
+      <h2>内訳（建物ごとの判定）</h2>
+      <div class="big"><span id="n-cov">-</span> <small>/ <span id="n-total">-</span> 棟が聞こえる</small></div>
+      <div class="bar"><i id="bar-g"></i><i id="bar-y"></i><i id="bar-r"></i></div>
+      <table class="kv">
+        <tr><th><span class="sw g"></span>スピーカーで聞こえる</th><td id="n-g">-</td></tr>
+        <tr><th><span class="sw y"></span>戸別受信機で補う</th><td id="n-y">-</td></tr>
+        <tr><th><span class="sw r"></span>聞こえない</th><td id="n-r">-</td></tr>
+        <tr><th>費用 / 予算</th><td id="n-cost">-</td></tr>
+        <tr><th>スピーカー / 戸別受信機</th><td id="n-items">-</td></tr>
+        <tr><th id="lbl-gap">整数計画の最適性ギャップ</th><td id="n-gap">-</td></tr>
+      </table>
+      <p class="small" id="consist"></p>
+    </section>
+
+    <section class="card">
+      <h2>クリックした地点</h2>
+      <div id="pt-info" class="small">地面（または建物）をクリックしてください。</div>
+      <div class="audio">
+        <label>再生する音
+          <select id="sel-voice">
+            <option value="synth">音声風の合成信号（意味のある言葉ではない）</option>
+            <option value="tts">ブラウザの音声合成（日本語）</option>
+          </select>
+        </label>
+        <label class="slider">再生音量 <output id="out-vol">60%</output>
+          <input type="range" id="rng-vol" min="0" max="100" value="60">
+        </label>
+        <button type="button" id="btn-play" disabled>この地点の聞こえ方を再生</button>
+        <div class="small" id="pt-note"></div>
+      </div>
+      <p class="warn">予測値は概略で、実測ではありません。再生音は、予測した音圧と背景雑音の差だけを再現した模擬で、実際の聞こえ方とは異なります（音量は聞き取りやすいよう正規化しています）。</p>
+    </section>
+
+    <section class="card">
+      <h2>凡例</h2>
+      <ul class="legend">
+        <li><span class="sw g"></span>聞こえる建物（淡い青緑の覆い）<span id="leg-g-note"></span></li>
+        <li><span class="sw y stripe"></span>戸別受信機で補う建物（黄の斜め縞）</li>
+        <li><span class="sw r grid"></span>聞こえない建物（朱色の格子。最も濃く、輪郭が強く光る）</li>
+        <li>「写真を見る」は覆いとヒートマップを薄くして航空写真を見やすくした表示、「分析を見る」は濃くした表示です。どちらでも、色・模様（縞・格子）・輪郭の太さの 3 つで区別できます。</li>
+        <li><span class="sw gl"></span>覆いが白っぽい建物は高さ不明（仮定の高さ <span id="h-def">8.2</span> m）</li>
+        <li><span class="sw beacon"></span>選ばれたスピーカー（電柱とビーコン。ビーコンと光の柱は見やすさのため誇張） <span class="sw cand"></span>候補</li>
+        <li><span class="sw wave"></span>波面のリング（音が広がる様子の模式。実際の音速より遅く表示）</li>
+      </ul>
+      <canvas id="legend-ramp" width="260" height="14"></canvas>
+      <div class="ramp-l"><span id="ramp-lo"></span><span id="ramp-hi"></span></div>
+      <p class="small">地面の色（viridis）: <span id="heat-scope"></span>選んだスピーカーのエネルギー和の音圧レベル（dB）。「分析を見る」では、細い線が 5 dB ごとの等高線、白と黒の太い線が<b>しきい値（<span class="thr-v">-</span> dB）</b>の境界です。「写真を見る」では、航空写真を見やすくするため、これらの線を描きません（色だけで読みます）。</p>
+    </section>
+
+    <section class="card">
+      <h2>仮定と注意</h2>
+      <p class="small" id="def-text">「聞こえる」＝受音点の音圧レベル ≥ 背景雑音 + 余裕 = <b class="thr-v">-</b> dB（消防庁の検討会報告書の「音達」の基準 75 dB に合わせた値。了解度指数 SII は計算していません）。</p>
+      <table class="kv small" id="params"></table>
+      <ul class="small notes">
+        <li id="note-model">数値は計算モデル（概略）の予測で、実測ではありません。</li>
+        <li>実測との比較は無い。</li>
+        <li>単位費用は仮定で、実際の見積りではありません。</li>
+        <li>音の計算は、建物の外形と高さ（LOD1、2020 年度版）で行っています。画面の建物は LOD2（2024 年度版）で、屋根の形があります。外壁の窓・色と屋根の色は、位置から決めた手続き的な模様で、実際の外観ではありません。夜の窓の明かりも模式です。</li>
+        <li>地面の起伏は、LOD2 の建物の足元の高さから推定した概略です。航空写真には撮影時の建物の影や、建物の傾いた見え方が残ります。</li>
+        <li id="note-judge">建物ごとの「聞こえる」判定は計算側の評価（候補ごとの covered_by）に基づき、地面の色は音圧の場から描いています。</li>
+        <li>高さ不明の建物は中央値 <span class="h-def2">8.2</span> m を仮定しています（計算側）。</li>
+        <li>街路樹・街灯・電柱・横断歩道・電線は、建物の外形が空けている空間に決まった乱数で並べた飾りで、PLATEAU のデータではありません。「街路の飾り」で消せます。</li>
+        <li>対象は金沢市の一地区です。子局の位置は、金沢市地域防災計画 参考資料 資料24（同報防災無線配備一覧表）の住所を、国土地理院の住所検索で座標にしたものです（資料に座標・出力・高さの記載はありません）。</li>
+      </ul>
+      <p class="small" id="datasrc"></p>
+    </section>
+
+    <footer class="card attr">
+      <div>出典：国土交通省 PLATEAUウェブサイト（<a href="https://www.mlit.go.jp/plateau/" target="_blank" rel="noopener">https://www.mlit.go.jp/plateau/</a>）を加工して作成</div>
+      <div>3D都市モデル：国土交通省 Project PLATEAU「3D都市モデル（Project PLATEAU）金沢市」を加工して作成。ライセンス：<a href="https://creativecommons.org/licenses/by/4.0/deed.ja" target="_blank" rel="noopener">CC BY 4.0</a></div>
+      <div>使用ライブラリ：<a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>、<a href="https://github.com/NASA-AMMOS/3DTilesRendererJS" target="_blank" rel="noopener">3d-tiles-renderer</a>、<a href="https://vite.dev/" target="_blank" rel="noopener">Vite</a>（いずれも MIT ライセンス）</div>
+      <div>地面の画像：国土地理院シームレス空中写真（<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">https://maps.gsi.go.jp/development/ichiran.html</a>）</div>
+    </footer>
+  </aside>
+</div>
+</body>
+</html>
